@@ -9,7 +9,15 @@
 import Foundation
 import CocoaAsyncSocket
 import SwiftAbstractLogger
-import Weak
+
+class Weak<T> where T: AnyObject {
+    
+    private(set) weak var object: T?
+    
+    init(object: T?) {
+        self.object = object
+    }
+}
 
 //
 // MARK: - Protocols
@@ -53,7 +61,7 @@ public class SSDPDiscovery: NSObject {
     public static let ssdpPort: Int = 1900
     
     /// Singleton access to a discovery operating on the main dispatch queue
-    open static let defaultDiscovery = SSDPDiscovery()
+    public static let defaultDiscovery = SSDPDiscovery()
     
     /// Private initialization using the global queue
     private override init() {
@@ -74,8 +82,8 @@ public class SSDPDiscovery: NSObject {
     
     /// Starts a discovery session based on an M-SEARCH `request`.
     ///
-    /// Clients are in control of the session lifetime and should retain the returned `SSDPDiscoverySession` else the session close 
-    /// immediately, unless an explict `timeout` is used. When a timeout is used the session will auto close after the timeout 
+    /// Clients are in control of the session lifetime and should retain the returned `SSDPDiscoverySession` else the session close
+    /// immediately, unless an explict `timeout` is used. When a timeout is used the session will auto close after the timeout
     /// automatically. For more information about discovery sessions see `SSDPDiscoverySessions`.
     ///
     /// - Parameters:
@@ -220,7 +228,7 @@ extension SSDPDiscovery {
     /// - Returns: A new discovery session for the request
     internal func startSession(request: SSDPMSearchRequest, timeout: TimeInterval? = nil) -> SSDPDiscoverySession {
         let session = SSDPDiscoverySession(request: request, discovery: self, timeout: timeout)
-        self.activeSessions.append(Weak(session))
+        self.activeSessions.append(Weak(object: session))
         session.start()
         return session
     }
