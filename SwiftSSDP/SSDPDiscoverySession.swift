@@ -112,9 +112,14 @@ public class SSDPDiscoverySession: Equatable {
         if let timeout = self.timeout {
             // Intended to reference `self` because we can use fire-and-forget when using a timer
             // close() will cancel the timer in other cases and deinit.
-            self.timeoutTimer = Timer.scheduledTimer(withTimeInterval: timeout, repeats: false, block: { (timer) in
-                self.forceClose()
-            })
+            DispatchQueue.global(qos: .background).async {
+                self.timeoutTimer = Timer.scheduledTimer(withTimeInterval: timeout, repeats: false, block: { (timer) in
+                    self.forceClose()
+                })
+                let runLoop=RunLoop.current
+                runLoop.add(self.timeoutTimer!, forMode: .default)
+                runLoop.run()
+            }
         }
         
         sendSearchRequest()
